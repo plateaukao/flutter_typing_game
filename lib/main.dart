@@ -196,50 +196,53 @@ class _GamePageState extends State<GamePage> {
   }
 
   Widget buildKey(KeyInfo keyInfo) {
-    return InkWell(
-      onTap: () => _textChanged(keyInfo.topRight),
-      child: AspectRatio(
-          aspectRatio: 1,
-          child: Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Container(
-              color: ThemeColors.blue,
-              child: Stack(
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.all(3.0),
-                    child: Align(
-                      alignment: Alignment.bottomLeft,
-                      child: Text(
-                        keyInfo.bottomLeft,
-                        style: Theme.of(context).textTheme.headline5,
+    return Material(
+      child: InkWell(
+        onTap: () => _textChanged(keyInfo.topRight),
+        onLongPress: () => _textChanged(keyInfo.topLeft),
+        child: AspectRatio(
+            aspectRatio: 1,
+            child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Container(
+                color: ThemeColors.blue.withAlpha(200),
+                child: Stack(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.all(3.0),
+                      child: Align(
+                        alignment: Alignment.bottomLeft,
+                        child: Text(
+                          keyInfo.bottomLeft,
+                          style: Theme.of(context).textTheme.headline5,
+                        ),
                       ),
                     ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.all(3.0),
-                    child: Align(
-                      alignment: Alignment.topRight,
-                      child: Text(
-                        keyInfo.topRight,
-                        style: Theme.of(context).textTheme.headline6,
+                    Padding(
+                      padding: const EdgeInsets.all(3.0),
+                      child: Align(
+                        alignment: Alignment.topRight,
+                        child: Text(
+                          keyInfo.topRight,
+                          style: Theme.of(context).textTheme.headline6,
+                        ),
                       ),
                     ),
-                  ),
-                  if (keyInfo.topLeft != '') Padding(
-                    padding: const EdgeInsets.all(3.0),
-                    child: Align(
-                      alignment: Alignment.topLeft,
-                      child: Text(
-                        keyInfo.topLeft,
-                        style: Theme.of(context).textTheme.headline6,
+                    if (keyInfo.topLeft != '') Padding(
+                      padding: const EdgeInsets.all(3.0),
+                      child: Align(
+                        alignment: Alignment.topLeft,
+                        child: Text(
+                          keyInfo.topLeft,
+                          style: Theme.of(context).textTheme.headline6,
+                        ),
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
-          )
+            )
+        ),
       ),
     );
   }
