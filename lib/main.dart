@@ -88,8 +88,19 @@ class _GamePageState extends State<GamePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-          title: Text(widget.title),
+        title: Text(widget.title),
         leading: Center(child: Text('$hitCount / $missCount')),
+        actions: [
+          IconButton(
+              icon: Icon(Icons.rotate_left),
+              onPressed: () {
+                setState(() {
+                  missCount = 0;
+                  hitCount = 0;
+                });
+              },
+          ),
+        ],
       ),
       body: Column(
         children: [
