@@ -111,6 +111,7 @@ class _GamePageState extends State<GamePage> {
           Padding(
             padding: const EdgeInsets.all(3.0),
             child: TextField(
+              autofocus: true,
               decoration: new InputDecoration(
                 focusedBorder: OutlineInputBorder(
                   borderSide: BorderSide(color: ThemeColors.blue, width: 3.0),
