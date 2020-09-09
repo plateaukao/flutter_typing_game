@@ -20,6 +20,7 @@ class MyApp extends StatelessWidget {
       title: 'Flutter Demo',
       theme: ThemeData(
         primaryColor: ThemeColors.darkBlue,
+        scaffoldBackgroundColor: ThemeColors.white,
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
       home: GamePage(title: 'Korean Typing Game'),
@@ -49,13 +50,19 @@ class _GamePageState extends State<GamePage> {
   double screenWidth;
   double screenHeight;
 
+  int missCount = 0;
+  int hitCount = 0;
+
   final myController = TextEditingController();
+
+  final gameAreaKey = GlobalKey();
+
+  Timer _timer;
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
 
-    screenHeight = MediaQuery.of(context).size.height;
     screenWidth = MediaQuery.of(context).size.width;
 
     double top = -_wordInterval * _practiceNumbers;
@@ -69,8 +76,8 @@ class _GamePageState extends State<GamePage> {
         }
     ).toList();
 
-    Timer.periodic(
-      Duration(milliseconds: 15),
+    _timer ??= Timer.periodic(
+      Duration(milliseconds: 20),
           (Timer t) => setState((){
         updateWordInfos();
       }),
@@ -80,11 +87,15 @@ class _GamePageState extends State<GamePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar( title: Text(widget.title)),
+      appBar: AppBar(
+          title: Text(widget.title),
+        leading: Center(child: Text('$hitCount / $missCount')),
+      ),
       body: Column(
         children: [
           Expanded(
             child: Stack(
+              key: gameAreaKey,
                 children: _wordInfos.map(
                           (wordInfo) => Positioned(
                         top: wordInfo.top,
@@ -102,7 +113,7 @@ class _GamePageState extends State<GamePage> {
             child: TextField(
               decoration: new InputDecoration(
                 focusedBorder: OutlineInputBorder(
-                  borderSide: BorderSide(color: Colors.greenAccent, width: 3.0),
+                  borderSide: BorderSide(color: ThemeColors.blue, width: 3.0),
                 ),
                 hintText: 'Input here',
               ),
@@ -122,10 +133,19 @@ class _GamePageState extends State<GamePage> {
     super.dispose();
   }
 
+  double _getGameAreaHeight() {
+    final RenderBox renderBoxRed = gameAreaKey.currentContext.findRenderObject();
+    final sizeRed = renderBoxRed.size;
+    return sizeRed.height;
+  }
+
   void updateWordInfos() {
+    if (screenHeight == null) screenHeight = _getGameAreaHeight();
+
     for (var wordInfo in _wordInfos) {
       wordInfo.top += 1;
       if (wordInfo.top >= screenHeight) {
+        missCount++;
         _wordInfos.remove(wordInfo);
         addNewWordInfo();
       }
@@ -147,6 +167,7 @@ class _GamePageState extends State<GamePage> {
   void _textChanged(String text) {
     final matchedWordInfo = _wordInfos.firstWhere((element) => element.word == text);
     if (matchedWordInfo != null) {
+      hitCount++;
       _wordInfos.remove(matchedWordInfo);
       addNewWordInfo();
       myController.text = '';
@@ -155,7 +176,7 @@ class _GamePageState extends State<GamePage> {
 
   Widget buildKeyboardLayout(List<List<KeyInfo>> keyInfos) {
     return Container(
-      color: Colors.grey[400],
+      color: ThemeColors.white,
       height: 230,
       child: Column(
           children: keyInfos.map((keyList) {
@@ -181,7 +202,7 @@ class _GamePageState extends State<GamePage> {
           child: Padding(
             padding: const EdgeInsets.all(8.0),
             child: Container(
-              color: Colors.grey[300],
+              color: ThemeColors.blue,
               child: Stack(
                 children: [
                   Padding(
