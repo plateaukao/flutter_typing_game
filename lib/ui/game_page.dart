@@ -15,8 +15,16 @@ class WordInfo {
   String word;
   double top;
   double left;
+  String relatedContent;
 
-  WordInfo(this.word, this.top, this.left);
+  WordInfo(this.word, this.top, this.left, {this.relatedContent});
+
+  WordInfo.from(VocabInfo info) {
+    word = info.word;
+    relatedContent = info.relatedContent;
+    top = 0;
+    left = 0;
+  }
 }
 
 class GamePage extends StatefulWidget {
@@ -48,7 +56,7 @@ class _GamePageState extends State<GamePage> {
 
   final rng = new Random();
 
-  List<VocabInfo> _allWords;
+  List<VocabInfo> _vocabInfos;
 
   List<WordInfo> _wordInfos;
 
@@ -79,13 +87,13 @@ class _GamePageState extends State<GamePage> {
 
     double top = -_wordInterval * _practiceNumbers;
 
-    _allWords = widget.vocabInfos;
-    _allWords.shuffle();
+    _vocabInfos = widget.vocabInfos;
+    _vocabInfos.shuffle();
 
-    _wordInfos = _allWords.take(_practiceNumbers).map(
+    _wordInfos = _vocabInfos.take(_practiceNumbers).map(
             (vocab) {
           top += _wordInterval;
-          return WordInfo(vocab.word, top, rng.nextInt(screenWidth.toInt() - 100).toDouble());
+          return WordInfo(vocab.word, top, rng.nextInt(screenWidth.toInt() - 100).toDouble(), relatedContent: vocab.relatedContent);
         }
     ).toList();
 
@@ -202,8 +210,9 @@ class _GamePageState extends State<GamePage> {
     return Column(
       children: [
         Container(
+          padding: EdgeInsets.symmetric(horizontal: 15.0),
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(10),
+            borderRadius: BorderRadius.circular(40),
             color: ThemeColors.white,
             boxShadow: [
               BoxShadow(color: ThemeColors.blue, spreadRadius: 3),
@@ -211,6 +220,8 @@ class _GamePageState extends State<GamePage> {
           ),
           child: Text(word, style: (Platform.isMacOS) ? Theme.of(context).textTheme.headline2 : Theme.of(context).textTheme.headline6),
         ),
+        const SizedBox(height: 2),
+        if (wordInfo.relatedContent != null) Text(wordInfo.relatedContent),
         _buildBomb(wordInfo.top, word.length),
       ],
     );
@@ -297,13 +308,14 @@ class _GamePageState extends State<GamePage> {
   }
 
   void _addNewWordInfo() {
-    final newWord = _allWords[rng.nextInt(_allWords.length)];
+    final newWord = _vocabInfos[rng.nextInt(_vocabInfos.length)];
 
     _wordInfos.add(
         WordInfo(
           newWord.word,
           -_wordInterval,
           rng.nextInt(screenWidth.toInt() - 100).toDouble(),
+          relatedContent: newWord.relatedContent,
         )
     );
   }
