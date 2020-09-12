@@ -6,9 +6,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:pimp_my_button/pimp_my_button.dart';
 
-import 'data_models.dart';
+import '../data_models.dart';
 import 'keyboard_layout.dart';
-import 'theme_colors.dart';
+import '../theme_colors.dart';
 
 class WordInfo {
   String word;

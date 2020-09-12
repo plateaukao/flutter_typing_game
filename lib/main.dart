@@ -2,7 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:korean_typing_game/theme_colors.dart';
-import 'package:korean_typing_game/vocab_list_page.dart';
+import 'package:korean_typing_game/ui/vocab_list_page.dart';
 import 'package:window_size/window_size.dart';
 
 void main() {

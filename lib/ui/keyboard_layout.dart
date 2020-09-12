@@ -2,7 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 
-import 'theme_colors.dart';
+import '../theme_colors.dart';
 
 class _KeyInfo {
   String topLeft;
