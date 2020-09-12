@@ -53,7 +53,6 @@ class _GamePageState extends State<GamePage> {
   List<WordInfo> _wordInfos;
 
   double screenWidth;
-  double screenHeight;
 
   int missCount = 0;
   int hitCount = 0;
@@ -163,6 +162,7 @@ class _GamePageState extends State<GamePage> {
 
   // ----------- UI elements -----------
   double _getGameAreaHeight() {
+    if (_gameAreaKey.currentContext == null) return 0;
     final RenderBox renderBoxRed = _gameAreaKey.currentContext.findRenderObject();
     final sizeRed = renderBoxRed.size;
     return sizeRed.height;
@@ -191,33 +191,40 @@ class _GamePageState extends State<GamePage> {
           }
         });
         controller.forward();
-        return _buildTextWidget(wordInfo.word);
+        return _buildTextWidget(wordInfo);
       },
     );
   }
 
-  // Widget _buildTextWidget(String word) =>
-  //     Text(word, style: (Platform.isMacOS) ? Theme.of(context).textTheme.headline2 : Theme.of(context).textTheme.headline6);
+  Widget _buildTextWidget(WordInfo wordInfo) {
+    final word = wordInfo.word;
 
-  Widget _buildTextWidget(String word) {
     return Column(
       children: [
         Container(
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(10),
-              color: ThemeColors.white,
-              boxShadow: [
-                BoxShadow(color: ThemeColors.blue, spreadRadius: 3),
-              ],
-            ),
-            child: Text(word, style: (Platform.isMacOS) ? Theme.of(context).textTheme.headline2 : Theme.of(context).textTheme.headline6)
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(10),
+            color: ThemeColors.white,
+            boxShadow: [
+              BoxShadow(color: ThemeColors.blue, spreadRadius: 3),
+            ],
+          ),
+          child: Text(word, style: (Platform.isMacOS) ? Theme.of(context).textTheme.headline2 : Theme.of(context).textTheme.headline6),
         ),
-        Container(
-          width: ((Platform.isMacOS) ? 60 : 30) * word.length.toDouble(),
-          height: 30,
-          child: Image.asset("assets/images/bomb.png", fit: BoxFit.fill),
-        ),
+        _buildBomb(wordInfo.top, word.length),
       ],
+    );
+  }
+
+  Widget _buildBomb(double y, int length) {
+    final image = Image.asset('assets/images/bomb.png', fit: BoxFit.fill);
+    final screenHeight = _getGameAreaHeight();
+
+    return Container(
+      width: ((Platform.isMacOS) ? 60 : 30) * length.toDouble(),
+      height: 30,
+      child: (screenHeight == null || (screenHeight - y)  > 150) ? image
+          : ColorFiltered(child: image, colorFilter: ColorFilter.mode(Colors.red, BlendMode.srcIn))
     );
   }
 
@@ -269,13 +276,13 @@ class _GamePageState extends State<GamePage> {
     return Positioned(
       top: wordInfo.top,
       left: wordInfo.left,
-      child: _buildTextWidget(wordInfo.word),
+      child: _buildTextWidget(wordInfo),
     );
   }
 
   // game logic
   void _updateWordInfos() {
-    if (screenHeight == null) screenHeight = _getGameAreaHeight();
+    final screenHeight = _getGameAreaHeight();
 
     for (var wordInfo in _wordInfos) {
       wordInfo.top += _dropDistance;
