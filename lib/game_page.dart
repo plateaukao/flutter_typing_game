@@ -10,6 +10,14 @@ import 'data_models.dart';
 import 'keyboard_layout.dart';
 import 'theme_colors.dart';
 
+class WordInfo {
+  String word;
+  double top;
+  double left;
+
+  WordInfo(this.word, this.top, this.left);
+}
+
 class GamePage extends StatefulWidget {
   GamePage({Key key, this.title, this.vocabInfos}) : super(key: key);
 
@@ -52,6 +60,9 @@ class _GamePageState extends State<GamePage> {
   final _gameAreaKey = GlobalKey();
 
   Timer _timer;
+
+  WordInfo _hitWordInfo;
+  Widget _effectWidget;
 
   @override
   void didChangeDependencies() {
@@ -97,7 +108,10 @@ class _GamePageState extends State<GamePage> {
           Expanded(
             child: Stack(
               key: _gameAreaKey,
-              children: _wordInfos.map(_buildFallingItem).toList(),
+              children: [
+                ..._wordInfos.map(_buildFallingItem).toList(),
+                if (_hitWordInfo != null) _buildHitAnimation(_hitWordInfo),
+              ],
             ),
           ),
           Padding(
@@ -134,6 +148,34 @@ class _GamePageState extends State<GamePage> {
     return sizeRed.height;
   }
 
+  Widget _buildHitAnimation(WordInfo wordInfo) {
+    _effectWidget ??= _buildEffectWidget(wordInfo);
+    return Positioned(
+      top: wordInfo.top,
+      left: wordInfo.left,
+      child: _effectWidget,
+    );
+  }
+
+  Widget _buildEffectWidget(WordInfo wordInfo) {
+    return PimpedButton(
+      duration: const Duration(milliseconds: 300),
+      particle: DemoParticle(),
+      pimpedWidgetBuilder: (context, controller) {
+        controller.addStatusListener((status) {
+          if (status == AnimationStatus.completed || status == AnimationStatus.dismissed) {
+            setState(() {
+              _hitWordInfo = null;
+              _effectWidget = null;
+            });
+          }
+        });
+        controller.forward();
+        return Text(_hitWordInfo.word, style: Theme.of(context).textTheme.headline2);
+      },
+    );
+  }
+
   Widget _buildRestartButton() =>
       IconButton(
         icon: Icon(Icons.rotate_left),
@@ -148,34 +190,24 @@ class _GamePageState extends State<GamePage> {
   Widget _buildGameControlButton() =>
       IconButton(
         icon: _timer?.isActive == true ? Icon(Icons.pause) : Icon(Icons.play_arrow),
-        onPressed: () {
-          if (_timer?.isActive == true) {
-            _timer.cancel();
-            _timer = null;
-          } else {
-            _timer = _createTimer();
-          }
-        },
+        onPressed: () => setState(() {
+            if (_timer?.isActive == true) {
+              _timer.cancel();
+              _timer = null;
+            } else {
+              _timer = _createTimer();
+            }
+          }),
       );
 
 
-  Widget _buildFallingItem(WordInfo wordInfo) =>
-      PimpedButton(
-        particle: DemoParticle(),
-        pimpedWidgetBuilder: (context, controller) {
-          return Positioned(
-            top: wordInfo.top,
-            left: wordInfo.left,
-            child: Text(
-              wordInfo.word,
-              style: Theme
-                  .of(context)
-                  .textTheme
-                  .headline2,
-            ),
-          );
-        },
-      );
+  Widget _buildFallingItem(WordInfo wordInfo) {
+    return Positioned(
+      top: wordInfo.top,
+      left: wordInfo.left,
+      child: Text(wordInfo.word, style: Theme.of(context).textTheme.headline2),
+    );
+  }
 
   // game logic
   void _updateWordInfos() {
@@ -189,6 +221,8 @@ class _GamePageState extends State<GamePage> {
         _addNewWordInfo();
       }
     }
+
+    _hitWordInfo?.top += _dropDistance;
   }
 
   void _addNewWordInfo() {
@@ -204,23 +238,29 @@ class _GamePageState extends State<GamePage> {
   }
 
   void _textChanged(String text) {
-    final matchedWordInfo = _wordInfos.firstWhere((element) => element.word == text);
+    final matchedWordInfo = _wordInfos.firstWhere((element) => element.word == text, orElse: () => null);
     if (matchedWordInfo != null) {
       hitCount++;
+
       _wordInfos.remove(matchedWordInfo);
+      setState(() {
+        _hitWordInfo = matchedWordInfo;
+      });
+
       _addNewWordInfo();
       _myController.text = '';
     }
   }
+
+  Timer _createTimer() =>
+      Timer.periodic(
+        Duration(milliseconds: _updateInterval),
+            (Timer t) {
+          if (mounted) {
+            setState(() => _updateWordInfos());
+          }
+        },
+      );
 }
 
-Timer _createTimer() =>
-    Timer.periodic(
-      Duration(milliseconds: _updateInterval),
-          (Timer t) {
-        if (mounted) {
-          setState(() => _updateWordInfos());
-        }
-      },
-    );}
 
