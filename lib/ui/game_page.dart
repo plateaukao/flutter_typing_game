@@ -117,35 +117,38 @@ class _GamePageState extends State<GamePage> {
             _speedUp();
           }
         },
-        child: Column(
-          children: [
-            Expanded(
-              child: Stack(
-                key: _gameAreaKey,
-                children: [
-                  ..._wordInfos.map(_buildFallingItem).toList(),
-                  if (_hitWordInfo != null) _buildHitAnimation(_hitWordInfo),
-                  if (!Platform.isMacOS) _buildSpeedUpButton(),
-                  if (!Platform.isMacOS) _buildSlowDownButton(),
-                ],
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(3.0),
-              child: TextField(
-                autofocus: true,
-                decoration: new InputDecoration(
-                  focusedBorder: OutlineInputBorder(
-                    borderSide: BorderSide(color: ThemeColors.blue, width: 3.0),
-                  ),
-                  hintText: 'Input here',
+        child: Container(
+          color: ThemeColors.skyBlue,
+          child: Column(
+            children: [
+              Expanded(
+                child: Stack(
+                  key: _gameAreaKey,
+                  children: [
+                    ..._wordInfos.map(_buildFallingItem).toList(),
+                    if (_hitWordInfo != null) _buildHitAnimation(_hitWordInfo),
+                    if (!Platform.isMacOS) _buildSpeedUpButton(),
+                    if (!Platform.isMacOS) _buildSlowDownButton(),
+                  ],
                 ),
-                controller: _myController,
-                onChanged: _textChanged,
               ),
-            ),
-            if (Platform.isMacOS) KeyboardLayout(KeyboardType.Korean, onReceiveCharacter: _textChanged),
-          ],
+              Padding(
+                padding: const EdgeInsets.all(3.0),
+                child: TextField(
+                  autofocus: true,
+                  decoration: new InputDecoration(
+                    focusedBorder: OutlineInputBorder(
+                      borderSide: BorderSide(color: ThemeColors.darkBlue, width: 3.0),
+                    ),
+                    hintText: '  type characters~',
+                  ),
+                  controller: _myController,
+                  onChanged: _textChanged,
+                ),
+              ),
+              if (Platform.isMacOS) KeyboardLayout(KeyboardType.Korean, onReceiveCharacter: _textChanged),
+            ],
+          ),
         ),
       ),
     );
@@ -193,8 +196,29 @@ class _GamePageState extends State<GamePage> {
     );
   }
 
+  // Widget _buildTextWidget(String word) =>
+  //     Text(word, style: (Platform.isMacOS) ? Theme.of(context).textTheme.headline2 : Theme.of(context).textTheme.headline6);
+
   Widget _buildTextWidget(String word) {
-    return Text(word, style: (Platform.isMacOS) ? Theme.of(context).textTheme.headline2 : Theme.of(context).textTheme.headline6);
+    return Column(
+      children: [
+        Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(10),
+              color: ThemeColors.white,
+              boxShadow: [
+                BoxShadow(color: ThemeColors.blue, spreadRadius: 3),
+              ],
+            ),
+            child: Text(word, style: (Platform.isMacOS) ? Theme.of(context).textTheme.headline2 : Theme.of(context).textTheme.headline6)
+        ),
+        Container(
+          width: ((Platform.isMacOS) ? 60 : 30) * word.length.toDouble(),
+          height: 30,
+          child: Image.asset("assets/images/bomb.png", fit: BoxFit.fill),
+        ),
+      ],
+    );
   }
 
   Widget _buildRestartButton() =>

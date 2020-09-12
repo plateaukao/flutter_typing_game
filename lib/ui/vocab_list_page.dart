@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:korean_typing_game/ui/game_page.dart';
@@ -66,7 +68,7 @@ class _VocabListPageState extends State<VocabListPage> {
     return Card(
         child: ListTile(
           onTap: () => GamePage.navigateTo(context, pageTitle, list),
-          title: Text(title),
+          title: (Platform.isMacOS) ? Center(child: Text(title)) : Text(title),
         ),
       );
   }
