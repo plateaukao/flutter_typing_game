@@ -1,10 +1,10 @@
-
 import 'dart:async';
 import 'dart:io';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:pimp_my_button/pimp_my_button.dart';
 
 import 'data_models.dart';
 import 'keyboard_layout.dart';
@@ -57,7 +57,10 @@ class _GamePageState extends State<GamePage> {
   void didChangeDependencies() {
     super.didChangeDependencies();
 
-    screenWidth = MediaQuery.of(context).size.width;
+    screenWidth = MediaQuery
+        .of(context)
+        .size
+        .width;
 
     double top = -_wordInterval * _practiceNumbers;
 
@@ -71,36 +74,22 @@ class _GamePageState extends State<GamePage> {
         }
     ).toList();
 
-    _timer ??= Timer.periodic(
-      Duration(milliseconds: _updateInterval),
-          (Timer t) {
-            if (mounted) {
-              setState(() => updateWordInfos());
-            }
-          },
-    );
+    _timer = _createTimer();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Center(child:Text(widget.title)),
+        title: Center(child: Text(widget.title)),
         leading: IconButton(
             icon: Icon(Icons.arrow_back),
             onPressed: () => Navigator.of(context).pop()
         ),
         actions: [
           Center(child: Text('$hitCount / $missCount')),
-          IconButton(
-            icon: Icon(Icons.rotate_left),
-            onPressed: () {
-              setState(() {
-                missCount = 0;
-                hitCount = 0;
-              });
-            },
-          ),
+          _buildRestartButton(),
+          _buildGameControlButton(),
         ],
       ),
       body: Column(
@@ -108,16 +97,7 @@ class _GamePageState extends State<GamePage> {
           Expanded(
             child: Stack(
               key: _gameAreaKey,
-              children: _wordInfos.map(
-                      (wordInfo) => Positioned(
-                    top: wordInfo.top,
-                    left: wordInfo.left,
-                    child: Text(
-                      wordInfo.word,
-                      style: Theme.of(context).textTheme.headline2,
-                    ),
-                  )
-              ).toList(),
+              children: _wordInfos.map(_buildFallingItem).toList(),
             ),
           ),
           Padding(
@@ -134,7 +114,7 @@ class _GamePageState extends State<GamePage> {
               onChanged: _textChanged,
             ),
           ),
-          if (Platform.isMacOS) KeyboardLayout(keyboardType: KeyboardType.Korean, onReceiveCharacter: _textChanged),
+          if (Platform.isMacOS) KeyboardLayout(KeyboardType.Korean, onReceiveCharacter: _textChanged),
         ],
       ),
     );
@@ -147,13 +127,58 @@ class _GamePageState extends State<GamePage> {
     super.dispose();
   }
 
+  // ----------- UI elements -----------
   double _getGameAreaHeight() {
     final RenderBox renderBoxRed = _gameAreaKey.currentContext.findRenderObject();
     final sizeRed = renderBoxRed.size;
     return sizeRed.height;
   }
 
-  void updateWordInfos() {
+  Widget _buildRestartButton() =>
+      IconButton(
+        icon: Icon(Icons.rotate_left),
+        onPressed: () {
+          setState(() {
+            missCount = 0;
+            hitCount = 0;
+          });
+        },
+      );
+
+  Widget _buildGameControlButton() =>
+      IconButton(
+        icon: _timer?.isActive == true ? Icon(Icons.pause) : Icon(Icons.play_arrow),
+        onPressed: () {
+          if (_timer?.isActive == true) {
+            _timer.cancel();
+            _timer = null;
+          } else {
+            _timer = _createTimer();
+          }
+        },
+      );
+
+
+  Widget _buildFallingItem(WordInfo wordInfo) =>
+      PimpedButton(
+        particle: DemoParticle(),
+        pimpedWidgetBuilder: (context, controller) {
+          return Positioned(
+            top: wordInfo.top,
+            left: wordInfo.left,
+            child: Text(
+              wordInfo.word,
+              style: Theme
+                  .of(context)
+                  .textTheme
+                  .headline2,
+            ),
+          );
+        },
+      );
+
+  // game logic
+  void _updateWordInfos() {
     if (screenHeight == null) screenHeight = _getGameAreaHeight();
 
     for (var wordInfo in _wordInfos) {
@@ -161,12 +186,12 @@ class _GamePageState extends State<GamePage> {
       if (wordInfo.top >= screenHeight) {
         missCount++;
         _wordInfos.remove(wordInfo);
-        addNewWordInfo();
+        _addNewWordInfo();
       }
     }
   }
 
-  void addNewWordInfo() {
+  void _addNewWordInfo() {
     final newWord = _allWords[rng.nextInt(_allWords.length)];
 
     _wordInfos.add(
@@ -183,9 +208,19 @@ class _GamePageState extends State<GamePage> {
     if (matchedWordInfo != null) {
       hitCount++;
       _wordInfos.remove(matchedWordInfo);
-      addNewWordInfo();
+      _addNewWordInfo();
       _myController.text = '';
     }
   }
 }
+
+Timer _createTimer() =>
+    Timer.periodic(
+      Duration(milliseconds: _updateInterval),
+          (Timer t) {
+        if (mounted) {
+          setState(() => _updateWordInfos());
+        }
+      },
+    );}
 

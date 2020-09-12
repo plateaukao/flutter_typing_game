@@ -63,7 +63,7 @@ class KeyboardLayout extends StatelessWidget {
 
   final Function(String) onReceiveCharacter;
 
-  const KeyboardLayout({Key key, this.keyboardType, this.onReceiveCharacter}) : super(key: key);
+  const KeyboardLayout(this.keyboardType, {Key key, this.onReceiveCharacter}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {

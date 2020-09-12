@@ -35,6 +35,8 @@ dependencies:
       path: plugins/window_size
       ref: 955da3da17a0dfcf32ae00bd65fadd7af294cb86
 
+  pimp_my_button: ^1.0.0
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
