@@ -85,7 +85,7 @@ class _GamePageState extends State<GamePage> {
         }
     ).toList();
 
-    _timer = _createTimer();
+    _timer ??= _createTimer();
   }
 
   @override
@@ -171,9 +171,13 @@ class _GamePageState extends State<GamePage> {
           }
         });
         controller.forward();
-        return Text(_hitWordInfo.word, style: Theme.of(context).textTheme.headline2);
+        return _buildTextWidget(wordInfo.word);
       },
     );
+  }
+
+  Widget _buildTextWidget(String word) {
+    return Text(word, style: (Platform.isMacOS) ? Theme.of(context).textTheme.headline2 : Theme.of(context).textTheme.headline6);
   }
 
   Widget _buildRestartButton() =>
@@ -205,7 +209,7 @@ class _GamePageState extends State<GamePage> {
     return Positioned(
       top: wordInfo.top,
       left: wordInfo.left,
-      child: Text(wordInfo.word, style: Theme.of(context).textTheme.headline2),
+      child: _buildTextWidget(wordInfo.word),
     );
   }
 

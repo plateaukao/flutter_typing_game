@@ -19,26 +19,27 @@ class _VocabListPageState extends State<VocabListPage> {
       .map((char) => VocabInfo(char))
       .toList();
 
+  bool _isLoading = true;
+
   @override
   void initState() {
     super.initState();
 
-    loadBeginnerVocab().then((list) {
-      _beginnerVocabList = list;
-      setState(() { });
-    });
-
-    loadIntermediateVocab().then((list) {
-      _intermediateVocabList = list;
-      setState(() { });
-    });
+    _initializeData();
   }
+
+  Future<void> _initializeData() async {
+    _beginnerVocabList = await loadBeginnerVocab();
+    _intermediateVocabList = await loadIntermediateVocab();
+    setState(() => _isLoading = false);
+  }
+
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: Text('Vocabulary List')),
-      body: Column(
+      body: _isLoading ? Center(child: CircularProgressIndicator()) : ListView(
         children: [
           _buildListItem(context, 'Korean Character', 'Characters', _characters),
           _buildListItem(context, 'Korean Beginner Vocabulary', 'Beginner Vocabulary', _beginnerVocabList, characterLimit: 1),
