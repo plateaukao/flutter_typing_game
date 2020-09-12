@@ -91,7 +91,7 @@ class _GamePageState extends State<GamePage> {
             onPressed: () => Navigator.of(context).pop()
         ),
         actions: [
-        Center(child: Text('$hitCount / $missCount')),
+          Center(child: Text('$hitCount / $missCount')),
           IconButton(
             icon: Icon(Icons.rotate_left),
             onPressed: () {
@@ -134,7 +134,7 @@ class _GamePageState extends State<GamePage> {
               onChanged: _textChanged,
             ),
           ),
-          if (Platform.isMacOS) buildKeyboardLayout(koreanKeyboard),
+          if (Platform.isMacOS) KeyboardLayout(keyboardType: KeyboardType.Korean, onReceiveCharacter: _textChanged),
         ],
       ),
     );
@@ -186,78 +186,6 @@ class _GamePageState extends State<GamePage> {
       addNewWordInfo();
       _myController.text = '';
     }
-  }
-
-  Widget buildKeyboardLayout(List<List<KeyInfo>> keyInfos) {
-    return Container(
-        color: ThemeColors.white,
-        height: 230,
-        child: Column(
-            children: keyInfos.map((keyList) {
-              return Expanded(child: buildKeyboardRow(keyList));
-            }).toList()
-        )
-    );
-  }
-
-  Widget buildKeyboardRow(List<KeyInfo> keyInfos) {
-    return Row(
-      children: keyInfos.map(
-              (keyInfo) => Expanded(child: buildKey(keyInfo))
-      ).toList(),
-    );
-  }
-
-  Widget buildKey(KeyInfo keyInfo) {
-    return Material(
-      child: InkWell(
-        onTap: () => _textChanged(keyInfo.topRight),
-        onLongPress: () => _textChanged(keyInfo.topLeft),
-        child: AspectRatio(
-            aspectRatio: 1,
-            child: Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Container(
-                color: ThemeColors.blue.withAlpha(200),
-                child: Stack(
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.all(3.0),
-                      child: Align(
-                        alignment: Alignment.bottomLeft,
-                        child: Text(
-                          keyInfo.bottomLeft,
-                          style: Theme.of(context).textTheme.headline5,
-                        ),
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.all(3.0),
-                      child: Align(
-                        alignment: Alignment.topRight,
-                        child: Text(
-                          keyInfo.topRight,
-                          style: Theme.of(context).textTheme.headline6,
-                        ),
-                      ),
-                    ),
-                    if (keyInfo.topLeft != '') Padding(
-                      padding: const EdgeInsets.all(3.0),
-                      child: Align(
-                        alignment: Alignment.topLeft,
-                        child: Text(
-                          keyInfo.topLeft,
-                          style: Theme.of(context).textTheme.headline6,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            )
-        ),
-      ),
-    );
   }
 }
 
