@@ -3,6 +3,7 @@ import 'dart:io';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:pimp_my_button/pimp_my_button.dart';
 
@@ -40,8 +41,10 @@ class GamePage extends StatefulWidget {
 class _GamePageState extends State<GamePage> {
   static const double _wordInterval = 50;
   static const int _practiceNumbers = 5;
-  static const int _updateInterval = 40;
   static const int _dropDistance = 1;
+
+  // could be changed by arrow keys
+  int _updateInterval = 40;
 
   final rng = new Random();
 
@@ -64,6 +67,8 @@ class _GamePageState extends State<GamePage> {
   WordInfo _hitWordInfo;
   Widget _effectWidget;
 
+  FocusNode focusNode = FocusNode();
+
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
@@ -81,7 +86,7 @@ class _GamePageState extends State<GamePage> {
     _wordInfos = _allWords.take(_practiceNumbers).map(
             (vocab) {
           top += _wordInterval;
-          return WordInfo(vocab.word, top, rng.nextInt(300).toDouble());
+          return WordInfo(vocab.word, top, rng.nextInt(screenWidth.toInt() - 100).toDouble());
         }
     ).toList();
 
@@ -103,33 +108,45 @@ class _GamePageState extends State<GamePage> {
           _buildGameControlButton(),
         ],
       ),
-      body: Column(
-        children: [
-          Expanded(
-            child: Stack(
-              key: _gameAreaKey,
-              children: [
-                ..._wordInfos.map(_buildFallingItem).toList(),
-                if (_hitWordInfo != null) _buildHitAnimation(_hitWordInfo),
-              ],
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(3.0),
-            child: TextField(
-              autofocus: true,
-              decoration: new InputDecoration(
-                focusedBorder: OutlineInputBorder(
-                  borderSide: BorderSide(color: ThemeColors.blue, width: 3.0),
-                ),
-                hintText: 'Input here',
+      body: RawKeyboardListener(
+        focusNode: focusNode,
+        onKey: (event) {
+          if (event.data.logicalKey == LogicalKeyboardKey.arrowUp) {
+            _slowDown();
+          } else if (event.data.logicalKey == LogicalKeyboardKey.arrowDown) {
+            _speedUp();
+          }
+        },
+        child: Column(
+          children: [
+            Expanded(
+              child: Stack(
+                key: _gameAreaKey,
+                children: [
+                  ..._wordInfos.map(_buildFallingItem).toList(),
+                  if (_hitWordInfo != null) _buildHitAnimation(_hitWordInfo),
+                  if (!Platform.isMacOS) _buildSpeedUpButton(),
+                  if (!Platform.isMacOS) _buildSlowDownButton(),
+                ],
               ),
-              controller: _myController,
-              onChanged: _textChanged,
             ),
-          ),
-          if (Platform.isMacOS) KeyboardLayout(KeyboardType.Korean, onReceiveCharacter: _textChanged),
-        ],
+            Padding(
+              padding: const EdgeInsets.all(3.0),
+              child: TextField(
+                autofocus: true,
+                decoration: new InputDecoration(
+                  focusedBorder: OutlineInputBorder(
+                    borderSide: BorderSide(color: ThemeColors.blue, width: 3.0),
+                  ),
+                  hintText: 'Input here',
+                ),
+                controller: _myController,
+                onChanged: _textChanged,
+              ),
+            ),
+            if (Platform.isMacOS) KeyboardLayout(KeyboardType.Korean, onReceiveCharacter: _textChanged),
+          ],
+        ),
       ),
     );
   }
@@ -204,6 +221,25 @@ class _GamePageState extends State<GamePage> {
           }),
       );
 
+  Widget _buildSpeedUpButton() =>
+      Positioned(
+        right: 0,
+        bottom: 0,
+        child: IconButton(
+          icon: Icon(Icons.fast_forward),
+          onPressed: () => _speedUp(),
+        ),
+      );
+
+  Widget _buildSlowDownButton() =>
+      Positioned(
+        right: 0,
+        bottom: 50,
+        child: IconButton(
+          icon: Icon(Icons.fast_rewind),
+          onPressed: () => _slowDown(),
+        ),
+      );
 
   Widget _buildFallingItem(WordInfo wordInfo) {
     return Positioned(
@@ -265,6 +301,18 @@ class _GamePageState extends State<GamePage> {
           }
         },
       );
+
+  void _speedUp() {
+    _timer?.cancel();
+    _updateInterval -= 2;
+    _timer = _createTimer();
+  }
+
+  void _slowDown() {
+    _timer?.cancel();
+    _updateInterval += 5;
+    _timer = _createTimer();
+  }
 }
 
 
