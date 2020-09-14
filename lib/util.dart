@@ -23,5 +23,5 @@ List<VocabInfo> parseFileString(String content) =>
     }).toList();
 
 bool isBigScreen() {
-  return kIsWeb || Platform.isWindows || Platform.isMacOS || Platform.isLinux;
+  return !kIsWeb && (Platform.isWindows || Platform.isMacOS || Platform.isLinux);
 }
