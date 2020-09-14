@@ -1,4 +1,6 @@
 import 'dart:async' show Future;
+import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart' show rootBundle;
 
 import 'data_models.dart';
@@ -19,3 +21,7 @@ List<VocabInfo> parseFileString(String content) =>
       if(items.length == 1) return VocabInfo(items[0]);
       return VocabInfo(items[0], relatedContent: items[1], genre: items[2]);
     }).toList();
+
+bool isBigScreen() {
+  return kIsWeb || Platform.isWindows || Platform.isMacOS || Platform.isLinux;
+}

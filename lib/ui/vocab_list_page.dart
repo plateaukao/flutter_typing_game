@@ -68,7 +68,7 @@ class _VocabListPageState extends State<VocabListPage> {
     return Card(
         child: ListTile(
           onTap: () => GamePage.navigateTo(context, pageTitle, list),
-          title: (Platform.isMacOS) ? Center(child: Text(title)) : Text(title),
+          title: isBigScreen() ? Center(child: Text(title)) : Text(title),
         ),
       );
   }

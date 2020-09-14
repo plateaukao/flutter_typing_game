@@ -2,9 +2,12 @@ import 'dart:async';
 import 'dart:io';
 import 'dart:math';
 
+// import 'package:audioplayers/audio_cache.dart';
+// import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
+import 'package:korean_typing_game/util.dart';
 import 'package:pimp_my_button/pimp_my_button.dart';
 
 import '../data_models.dart';
@@ -47,7 +50,9 @@ class GamePage extends StatefulWidget {
 }
 
 class _GamePageState extends State<GamePage> {
-  static const double _wordInterval = 50;
+  // static AudioPlayer audioPlayer = AudioPlayer(mode: PlayerMode.LOW_LATENCY);
+  // static AudioCache audioCache = AudioCache();
+  static const int _wordInterval = 80;
   static const int _practiceNumbers = 5;
   static const int _dropDistance = 1;
 
@@ -76,6 +81,18 @@ class _GamePageState extends State<GamePage> {
 
   FocusNode focusNode = FocusNode();
 
+  // @override
+  // void initState() {
+  //   if (Platform.isIOS) {
+  //     if (audioCache.fixedPlayer != null) {
+  //       audioCache.fixedPlayer.startHeadlessService();
+  //     }
+  //     audioPlayer.startHeadlessService();
+  //   }
+  //
+  //   super.initState();
+  // }
+
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
@@ -85,14 +102,14 @@ class _GamePageState extends State<GamePage> {
         .size
         .width;
 
-    double top = -_wordInterval * _practiceNumbers;
+    double top = -30;
 
     _vocabInfos = widget.vocabInfos;
     _vocabInfos.shuffle();
 
     _wordInfos = _vocabInfos.take(_practiceNumbers).map(
             (vocab) {
-          top += _wordInterval;
+          top -= rng.nextInt(_wordInterval) + 50;
           return WordInfo(vocab.word, top, rng.nextInt(screenWidth.toInt() - 100).toDouble(), relatedContent: vocab.relatedContent);
         }
     ).toList();
@@ -132,10 +149,10 @@ class _GamePageState extends State<GamePage> {
                 child: Stack(
                   key: _gameAreaKey,
                   children: [
-                    ..._wordInfos.map(_buildFallingItem).toList(),
+                    ..._wordInfos.map(_buildFallingItem).toList().reversed, // so that lower one can be on top of higher ones.
                     if (_hitWordInfo != null) _buildHitAnimation(_hitWordInfo),
-                    if (!Platform.isMacOS) _buildSpeedUpButton(),
-                    if (!Platform.isMacOS) _buildSlowDownButton(),
+                    if (!isBigScreen()) _buildSpeedUpButton(),
+                    if (!isBigScreen()) _buildSlowDownButton(),
                   ],
                 ),
               ),
@@ -153,7 +170,7 @@ class _GamePageState extends State<GamePage> {
                   onChanged: _textChanged,
                 ),
               ),
-              if (Platform.isMacOS) KeyboardLayout(KeyboardType.Korean, onReceiveCharacter: _textChanged),
+              if (isBigScreen()) KeyboardLayout(KeyboardType.Korean, onReceiveCharacter: _textChanged),
             ],
           ),
         ),
@@ -218,7 +235,7 @@ class _GamePageState extends State<GamePage> {
               BoxShadow(color: ThemeColors.blue, spreadRadius: 3),
             ],
           ),
-          child: Text(word, style: (Platform.isMacOS) ? Theme.of(context).textTheme.headline2 : Theme.of(context).textTheme.headline6),
+          child: Text(word, style: isBigScreen() ? Theme.of(context).textTheme.headline2 : Theme.of(context).textTheme.headline6),
         ),
         const SizedBox(height: 2),
         if (wordInfo.relatedContent != null) Text(wordInfo.relatedContent),
@@ -232,7 +249,7 @@ class _GamePageState extends State<GamePage> {
     final screenHeight = _getGameAreaHeight();
 
     return Container(
-      width: ((Platform.isMacOS) ? 60 : 30) * length.toDouble(),
+      width: (isBigScreen() ? 60 : 30) * length.toDouble(),
       height: 30,
       child: (screenHeight == null || (screenHeight - y)  > 150) ? image
           : ColorFiltered(child: image, colorFilter: ColorFilter.mode(Colors.red, BlendMode.srcIn))
@@ -313,7 +330,7 @@ class _GamePageState extends State<GamePage> {
     _wordInfos.add(
         WordInfo(
           newWord.word,
-          -_wordInterval,
+          -rng.nextInt(_wordInterval).toDouble() - 50,
           rng.nextInt(screenWidth.toInt() - 100).toDouble(),
           relatedContent: newWord.relatedContent,
         )
@@ -322,7 +339,11 @@ class _GamePageState extends State<GamePage> {
 
   void _textChanged(String text) {
     final matchedWordInfo = _wordInfos.firstWhere((element) => element.word == text, orElse: () => null);
+
+    // hit the word
     if (matchedWordInfo != null) {
+      //_playExplosionSound();
+
       hitCount++;
 
       _wordInfos.remove(matchedWordInfo);
@@ -356,6 +377,12 @@ class _GamePageState extends State<GamePage> {
     _updateInterval += 5;
     _timer = _createTimer();
   }
+
+  // void _playExplosionSound() {
+  //   if (!Platform.isMacOS) {
+  //     audioCache.play('files/explosion.mp3', volume: 0.5);
+  //   }
+  // }
 }
 
 
