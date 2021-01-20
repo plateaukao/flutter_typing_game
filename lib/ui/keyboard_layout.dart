@@ -58,18 +58,15 @@ List<List<_KeyInfo>> koreanKeyboard = [
 ];
 
 class KeyboardLayout extends StatelessWidget {
-  
   final KeyboardType keyboardType;
-
   final Function(String) onReceiveCharacter;
-
   const KeyboardLayout(this.keyboardType, {Key key, this.onReceiveCharacter}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return Container(
-        color: ThemeColors.white,
         height: 230,
+        color: ThemeColors.grey,
         child: Column(
             children: keyInfosList.map((keyList) {
               return Expanded(child: buildKeyboardRow(context, keyList));
@@ -87,78 +84,31 @@ class KeyboardLayout extends StatelessWidget {
     }
   }
 
-  Widget buildKeyboardLayout(BuildContext context, List<List<_KeyInfo>> keyInfosList) {
-    return Container(
-        color: ThemeColors.white,
-        height: 230,
-        child: Column(
-            children: keyInfosList.map((keyList) {
-              return Expanded(child: buildKeyboardRow(context, keyList));
-            }).toList()
-        )
+  Widget buildKeyboardRow(BuildContext context, List<_KeyInfo> keyInfos) => Row(
+      children: keyInfos.map((keyInfo) => Expanded(child: buildKey(context, keyInfo))).toList(),
     );
-  }
-
-  Widget buildKeyboardRow(BuildContext context, List<_KeyInfo> keyInfos) {
-    return Row(
-      children: keyInfos.map(
-              (keyInfo) => Expanded(child: buildKey(context, keyInfo))
-      ).toList(),
-    );
-  }
 
   Widget buildKey(BuildContext context, _KeyInfo keyInfo) {
+    final padding = 6.0;
     return Material(
+      color: ThemeColors.grey,
       child: InkWell(
         onTap: () => onReceiveCharacter(keyInfo.topRight),
         onLongPress: () => onReceiveCharacter(keyInfo.topLeft),
         child: AspectRatio(
             aspectRatio: 1,
             child: Padding(
-              padding: const EdgeInsets.all(8.0),
+              padding: EdgeInsets.all(padding),
               child: Container(
-                color: ThemeColors.blue.withAlpha(200),
+                decoration: new BoxDecoration(
+                  color: ThemeColors.black.withAlpha(200),
+                  borderRadius: new BorderRadius.all(const Radius.circular(5.0)),
+                ),
                 child: Stack(
                   children: [
-                    Padding(
-                      padding: const EdgeInsets.all(3.0),
-                      child: Align(
-                        alignment: Alignment.bottomLeft,
-                        child: Text(
-                          keyInfo.bottomLeft,
-                          style: Theme
-                              .of(context)
-                              .textTheme
-                              .headline5,
-                        ),
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.all(3.0),
-                      child: Align(
-                        alignment: Alignment.topRight,
-                        child: Text(
-                          keyInfo.topRight,
-                          style: Theme
-                              .of(context)
-                              .textTheme
-                              .headline6,
-                        ),
-                      ),
-                    ),
-                    if (keyInfo.topLeft != '') Padding(
-                      padding: const EdgeInsets.all(3.0),
-                      child: Align(
-                        alignment: Alignment.topLeft,
-                        child: Text(
-                          keyInfo.topLeft,
-                          style: Theme
-                              .of(context)
-                              .textTheme
-                              .headline6,
-                        ),
-                      ),
-                    ),
+                    buildBottomLeftChar(context, padding, keyInfo),
+                    buildTopRightChar(context, padding, keyInfo),
+                    buildTopLeftChar(context, padding, keyInfo),
                   ],
                 ),
               ),
@@ -167,4 +117,35 @@ class KeyboardLayout extends StatelessWidget {
       ),
     );
   }
+
+  Widget buildBottomLeftChar(BuildContext context, double padding, _KeyInfo keyInfo) => Padding(
+      padding: EdgeInsets.all(padding),
+      child: Align(
+        alignment: Alignment.bottomLeft,
+        child: Text(
+          keyInfo.bottomLeft,
+          style: Theme.of(context).textTheme.headline5.copyWith(color: ThemeColors.white),
+        ),
+      ),
+    );
+
+  Widget buildTopRightChar(BuildContext context, double padding, _KeyInfo keyInfo) => Padding(
+      padding: EdgeInsets.all(padding),
+      child: Align(
+        alignment: Alignment.topRight,
+        child: Text(
+            keyInfo.topRight,
+            style: Theme.of(context).textTheme.headline6.copyWith(color: ThemeColors.white)),
+      ),
+    );
+
+  Widget buildTopLeftChar(BuildContext context, double padding, _KeyInfo keyInfo) => (keyInfo.topLeft != '')? Padding(
+      padding: EdgeInsets.all(padding),
+      child: Align(
+        alignment: Alignment.topLeft,
+        child: Text(
+            keyInfo.topLeft,
+            style: Theme.of(context).textTheme.headline6.copyWith(color: ThemeColors.white)),
+      ),
+    ) : SizedBox.shrink();
 }

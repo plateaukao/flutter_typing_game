@@ -7,4 +7,6 @@ class ThemeColors {
   static Color deepBlue = Color(0xFF3F72AF);
   static Color darkBlue = Color(0xFF112D4E);
   static Color skyBlue = Color(0xFFBFEBF5);
+  static Color black = Color(0xFF000000);
+  static Color grey = Color(0xFFBBBBBB);
 }
